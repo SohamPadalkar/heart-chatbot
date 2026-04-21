@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heart Health Chatbot</title>
+  <style>
+    :root {
+      --ink: #dbeafe;
+      --panel: #0c1424;
+      --panel-soft: #101c31;
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --line: #21314f;
+      --warn: #fb7185;
+      --soft: #16243e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(58rem 34rem at 8% -10%, #153258 0%, transparent 70%),
+        radial-gradient(35rem 28rem at 95% 105%, #1a3e37 0%, transparent 70%),
+        linear-gradient(145deg, #060b15, #0c1324 52%, #0b162a);
+      padding: 24px 14px;
+    }
+
+    .shell {
+      width: min(900px, 100%);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #0f1a2d 0%, #0b1323 100%);
+      box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .topbar {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, #12263f, #112f34);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(22px, 2.4vw, 30px);
+      letter-spacing: 0.2px;
+    }
+
+    .topbar p {
+      margin: 8px 0 0;
+      line-height: 1.4;
+      font-size: 14px;
+      color: #bdd6ef;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px;
+      max-height: 62vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #0b1426, #0d1b32);
+    }
+
+    .bubble {
+      max-width: 86%;
+      border-radius: 14px;
+      padding: 12px 14px;
+      line-height: 1.45;
+      animation: rise 0.25s ease;
+      white-space: pre-wrap;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: linear-gradient(180deg, #111e35, #0e1a2f);
+      border: 1px solid var(--line);
+      color: #d6e7fb;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .user {
+      align-self: flex-end;
+      background: linear-gradient(120deg, #164e63, #065f46);
+      color: #dcfce7;
+      border: 1px solid #2d7e8f;
+      font-weight: 700;
+    }
+
+    .bubble ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .controls {
+      border-top: 1px solid var(--line);
+      background: #0d1629;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .prompt {
+      font-size: 13px;
+      color: #99b8d6;
+      padding: 0 2px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"],
+    button,
+    .pill {
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      font-size: 15px;
+    }
+
+    input[type="number"] {
+      width: 170px;
+      background: #0d1a2e;
+      color: #e2f1ff;
+    }
+
+    button, .pill {
+      cursor: pointer;
+      background: #0f1d34;
+      color: #d3e8ff;
+    }
+
+    .pill {
+      font-weight: 700;
+      background: #13233f;
+    }
+
+    .pill:hover {
+      background: #1a2f53;
+    }
+
+    .submit {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff;
+      border: none;
+      font-weight: 800;
+      min-width: 180px;
+    }
+
+    .submit:hover {
+      filter: brightness(0.95);
+    }
+
+    .restart {
+      background: #1d4ed8;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      min-width: 180px;
+    }
+
+    .risk-chip {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+
+    .low {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border-color: rgba(52, 211, 153, 0.45);
+    }
+
+    .medium {
+      background: rgba(251, 191, 36, 0.18);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+
+    .high {
+      background: rgba(251, 113, 133, 0.2);
+      color: #fda4af;
+      border-color: rgba(244, 63, 94, 0.5);
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 10px;
+      background: #152742;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #244068;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #3ac2f0, #0d9a7c 60%, #ec4f3b);
+      transition: width 0.45s ease;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #88a8c6;
+    }
+
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    .small-meta {
+      display: block;
+      margin-top: 6px;
+      color: #97b5d4;
+      font-size: 12px;
+    }
+
+    .report-grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-card {
+      background: var(--soft);
+      border: 1px solid #294567;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #cbe6ff;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 10px;
+      }
+
+      .chat {
+        max-height: 58vh;
+      }
+
+      .bubble {
+        max-width: 94%;
+      }
+
+      .submit,
+      .restart {
+        width: 100%;
+      }
+
+      .report-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <h1>Heart Health Assistant</h1>
+      <p>
+        Let's chat through your symptoms one by one and create a detailed, easy-to-understand risk summary.
+        This tool is educational only, not a diagnosis.
+      </p>
+    </section>
+
+    <section id="chat" class="chat" aria-live="polite"></section>
+
+    <section class="controls">
+      <div id="prompt" class="prompt">Starting chat...</div>
+      <div id="inputRow" class="input-row"></div>
+      <div class="hint">Tip: Answer each prompt and generate a full report. Then choose Start New Chat for another person.</div>
+    </section>
+  </main>
+
+  <script>
+    const chatEl = document.getElementById("chat");
+    const promptEl = document.getElementById("prompt");
+    const inputRowEl = document.getElementById("inputRow");
+
+    const questions = [
+      { key: "age", text: "How old are you?", type: "number" },
+      { key: "chest_pain", text: "Are you having chest pain?", type: "yesno" },
+      { key: "short_breath", text: "Do you feel shortness of breath?", type: "yesno" },
+      { key: "sweating", text: "Are you having unusual sweating?", type: "yesno" },
+      { key: "fatigue", text: "Are you feeling unusual fatigue?", type: "yesno" },
+      { key: "dizziness", text: "Do you feel dizziness?", type: "yesno" },
+      { key: "high_bp", text: "Do you have high blood pressure?", type: "yesno" },
+      { key: "diabetes", text: "Do you have diabetes?", type: "yesno" },
+      { key: "high_cholesterol", text: "Do you have high cholesterol?", type: "yesno" }
+    ];
+
+    let current = 0;
+    let answers = {};
+
+    function addBubble(text, who = "bot", isHtml = false) {
+      const item = document.createElement("div");
+      item.className = `bubble ${who}`;
+      if (isHtml) {
+        item.innerHTML = text;
+      } else {
+        item.textContent = text;
+      }
+      chatEl.appendChild(item);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function renderCurrentQuestion() {
+      if (current >= questions.length) {
+        promptEl.textContent = "Great. Click below to generate your report.";
+        renderSubmitButton();
+        return;
+      }
+
+      const q = questions[current];
+      const index = current + 1;
+      promptEl.textContent = `Question ${index} of ${questions.length}`;
+      addBubble(q.text, "bot");
+      renderInputFor(q);
+    }
+
+    function renderInputFor(q) {
+      inputRowEl.innerHTML = "";
+
+      if (q.type === "number") {
+        const ageInput = document.createElement("input");
+        ageInput.type = "number";
+        ageInput.min = "1";
+        ageInput.max = "120";
+        ageInput.placeholder = "Enter age";
+
+        const sendBtn = document.createElement("button");
+        sendBtn.textContent = "Send";
+        sendBtn.className = "submit";
+        sendBtn.addEventListener("click", () => {
+          const age = Number(ageInput.value);
+          if (!age || age < 1 || age > 120) {
+            addBubble("Please enter a valid age between 1 and 120.", "bot");
+            return;
+          }
+          answers[q.key] = String(age);
+          addBubble(String(age), "user");
+          current += 1;
+          renderCurrentQuestion();
+        });
+
+        ageInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            sendBtn.click();
+          }
+        });
+
+        inputRowEl.appendChild(ageInput);
+        inputRowEl.appendChild(sendBtn);
+        ageInput.focus();
+        return;
+      }
+
+      const yesBtn = document.createElement("button");
+      yesBtn.className = "pill";
+      yesBtn.textContent = "Yes";
+      yesBtn.addEventListener("click", () => answerYesNo(q.key, "yes"));
+
+      const noBtn = document.createElement("button");
+      noBtn.className = "pill";
+      noBtn.textContent = "No";
+      noBtn.addEventListener("click", () => answerYesNo(q.key, "no"));
+
+      inputRowEl.appendChild(yesBtn);
+      inputRowEl.appendChild(noBtn);
+    }
+
+    function answerYesNo(key, value) {
+      answers[key] = value;
+      addBubble(value === "yes" ? "Yes" : "No", "user");
+      current += 1;
+      renderCurrentQuestion();
+    }
+
+    function renderSubmitButton() {
+      inputRowEl.innerHTML = "";
+      const submitBtn = document.createElement("button");
+      submitBtn.className = "submit";
+      submitBtn.textContent = "Generate Detailed Risk Report";
+      submitBtn.addEventListener("click", submitAnswers);
+      inputRowEl.appendChild(submitBtn);
+    }
+
+    function listBlock(title, values) {
+      const items = values.map((v) => `<li>${v}</li>`).join("");
+      return `<strong>${title}</strong><ul>${items}</ul>`;
+    }
+
+    async function submitAnswers() {
+      inputRowEl.innerHTML = "";
+      addBubble("One moment while I analyze your responses...", "bot");
+
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(answers)
+        });
+
+        if (!response.ok) {
+          throw new Error("Server response was not successful.");
+        }
+
+        const payload = await response.json();
+        const result = payload.result;
+
+        const levelClass = result.risk_level.toLowerCase().includes("high")
+          ? "high"
+          : result.risk_level.toLowerCase().includes("medium")
+            ? "medium"
+            : "low";
+
+        const reportHtml = `
+          <strong>Your Detailed Risk Report</strong>
+          <div class="risk-chip ${levelClass}">${result.risk_level} | Urgency: ${result.urgency}</div>
+          <span class="small-meta">Suggested follow-up timeline: ${result.followup_time}</span>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${result.risk_score}%"></div></div>
+          <p><strong>Risk Score:</strong> ${result.risk_score}%</p>
+          <p><strong>Score explanation:</strong> ${result.score_explainer}</p>
+          <p>${result.summary}</p>
+          <p><strong>Recommended next step:</strong> ${result.next_steps}</p>
+          <div class="report-grid">
+            <div class="mini-card">
+              ${listBlock("Your symptom snapshot", result.symptom_snapshot)}
+            </div>
+            <div class="mini-card">
+              ${listBlock("Watch these warning signs", result.warning_signs)}
+            </div>
+          </div>
+          ${listBlock("Possible related conditions", result.possible_conditions)}
+          ${listBlock("Recommended medical checks", result.suggested_tests)}
+          ${listBlock("Lifestyle support tips", result.lifestyle_tips)}
+          ${listBlock("Why this level was assigned", result.positive_factors)}
+          ${listBlock("Reassuring points", result.protective_notes)}
+          ${listBlock("Action checklist", result.action_checklist)}
+          <p class="warn">${result.disclaimer}</p>
+        `;
+
+        addBubble(reportHtml, "bot", true);
+        promptEl.textContent = "Chat complete";
+        showRestart();
+      } catch (err) {
+        addBubble("I could not generate the report right now. Please try again.", "bot");
+        showRestart();
+      }
+    }
+
+    function showRestart() {
+      inputRowEl.innerHTML = "";
+      const restartBtn = document.createElement("button");
+      restartBtn.className = "restart";
+      restartBtn.textContent = "Start New Chat";
+      restartBtn.addEventListener("click", resetChat);
+      inputRowEl.appendChild(restartBtn);
+    }
+
+    function resetChat() {
+      answers = {};
+      current = 0;
+      chatEl.innerHTML = "";
+      addBubble(
+        "Hello, I am your Heart Health Assistant. I will ask a few quick questions and then share a detailed risk summary.",
+        "bot"
+      );
+      addBubble(
+        "If you currently have severe chest pain, heavy sweating, or major breathing trouble, please seek emergency care immediately.",
+        "bot"
+      );
+      renderCurrentQuestion();
+    }
+
+    resetChat();
+  </script>
+</body>
+</html>

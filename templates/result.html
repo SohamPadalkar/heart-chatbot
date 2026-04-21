@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Result</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: linear-gradient(135deg, #f3fff9, #f6fbff);
+      color: #1f2d3d;
+    }
+
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(27, 56, 90, 0.12);
+      padding: 24px;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #0a3a66;
+    }
+
+    .risk {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 8px 0;
+    }
+
+    .score {
+      font-size: 20px;
+      margin: 8px 0 18px;
+    }
+
+    .box {
+      background: #f6fbff;
+      border-left: 4px solid #2f77b8;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    a.button {
+      display: inline-block;
+      text-decoration: none;
+      background: #0b5fa5;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    a.button:hover {
+      background: #084c85;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Your Chatbot Result</h1>
+    <p>Thanks for completing the check. Here is a simple summary:</p>
+
+    <div class="risk">{{ result.risk_level }}</div>
+    <div class="score">Risk Score: <strong>{{ result.risk_score }}%</strong></div>
+
+    <div class="box">
+      <strong>What this may mean:</strong><br>
+      {{ result.summary }}
+    </div>
+
+    <div class="box">
+      <strong>Suggested next steps:</strong><br>
+      {{ result.next_steps }}
+    </div>
+
+    <p>Age entered: {{ age }}</p>
+    <p><a class="button" href="/">Check another person</a></p>
+  </div>
+</body>
+</html>
